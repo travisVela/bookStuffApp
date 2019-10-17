@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject } from 'rxjs';
-import { take, map } from 'rxjs/operators';
+import { take, map, tap, delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlacesService {
+
+
   private _places =new BehaviorSubject<Place[]>([
       new Place(
         '1',
@@ -25,8 +27,8 @@ export class PlacesService {
         'The comfort of a beach right in front of you',
         'https://loveincorporated.blob.core.windows.net/contentimages/gallery/fd1eee2e-ed0e-42e4-8718-89b1d766b417-beachhut-mudeford-beach-cover.jpg',
         99,
-        new Date('2019-01-01'),
-        new Date('2019-12-31'),
+        new Date('2018-03-11'),
+        new Date('2020-04-20'),
         '2'
       ),
       new Place(
@@ -35,8 +37,8 @@ export class PlacesService {
         'Welcome to a cozy beet farm vaction property!!',
         'https://www.agweek.com/sites/default/files/styles/full_1000/public/field/image/sugar%20beet%20europe%20-%20reuters%20photo.jpg?itok=Y9MwHwS_',
         250,
-        new Date('2019-01-01'),
-        new Date('2019-12-31'),
+        new Date('2019-11-22'),
+        new Date('2020-07-15'),
         '1'
       )
     ]
@@ -71,9 +73,13 @@ export class PlacesService {
       availableTo,
       this.authService.userId
     )
-    this._places.pipe(take(1)).subscribe(places => {
-      this._places.next(places.concat(newPlace));
-    })
+    return this._places.pipe(
+      take(1),
+      delay(1000),
+      tap(places => {
+        this._places.next(places.concat(newPlace));
+      })
+    );
   }
 
 }
