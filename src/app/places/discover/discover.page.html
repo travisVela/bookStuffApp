@@ -16,7 +16,14 @@
       Bookable Places
     </ion-segment-button>
   </ion-segment>
-  <ion-grid>
+  <ion-grid *ngIf="!relevantPlaces || relevantPlaces.length <= 0">
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
+        <p>There are no bookable places right now. :(</p>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-grid *ngIf="relevantPlaces.length > 0"> 
     <ion-row>
       <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
         <ion-card>
@@ -28,7 +35,7 @@
               {{ loadedPlaces[0]?.price | currency }} / night
             </ion-card-subtitle>
           </ion-card-header>
-          <ion-img [src]="loadedPlaces[0].imgUrl"></ion-img>
+          <ion-img [src]="relevantPlaces[0].imgUrl"></ion-img>
           <ion-card-content>
             <p>{{ loadedPlaces[0]?.description }}</p>
           </ion-card-content>
@@ -41,7 +48,7 @@
                 'places',
                 'tabs',
                 'discover', 
-                loadedPlaces[0].id]"
+                relevantPlaces[0].id]"
               >
                 More
               </ion-button>

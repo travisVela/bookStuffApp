@@ -47,25 +47,25 @@ export class EditOfferPage implements OnInit, OnDestroy {
     });
   }
 
-  onSubmitEdit() { 
+  onSubmitEdit() {
     if (!this.form.valid) {
       return;
     }
-    console.log(this.form)
+    console.log(this.form);
     this.loadingCrtl.create({
       message: 'Loading stuff...'
     }).then(loadingEl => {
-      loadingEl.present()
+      loadingEl.present();
       this.placesService.updateOffer(
         this.place.id, 
         this.form.value.title,
         this.form.value.description
       ).subscribe(() => {
-        loadingEl.dismiss()
+        loadingEl.dismiss();
         this.form.reset();
-        this.router.navigate(['/places/tabs/offers'])
-      })
-    })
+        this.router.navigate(['/places/tabs/offers']);
+      });
+    });
   }
 
   ngOnDestroy() {
