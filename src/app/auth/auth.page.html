@@ -5,7 +5,67 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-button color="primary" (click)="onLogin()">
-    Login
-  </ion-button>
+  <form #f1="ngForm" (ngSubmit)="onSubmit(f1)">
+    <ion-grid>
+      <ion-row  class="ion-justify-content-center">
+        <ion-col size-md="8"> 
+          <ion-list>
+              <ion-item>
+                <ion-label position="floating">email</ion-label>
+                <ion-input 
+                  type="email" 
+                  ngModel 
+                  name="email" 
+                  required 
+                  email
+                  #emailCtrl="ngModel"
+                ></ion-input>
+              </ion-item>
+              <ion-item lines="none" *ngIf="!emailCtrl.valid && emailCtrl.touched">
+                <ion-label color="danger">
+                  <small>Should be a valid email!</small>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">password</ion-label>
+                <ion-input 
+                  type="password" 
+                  ngModel 
+                  name="password"
+                  required 
+                  minlength="6"
+                  #passCtrl="ngModel"
+                ></ion-input>
+              </ion-item>
+              <ion-item *ngIf="!passCtrl.valid && passCtrl.touched">
+                <ion-label color="danger">
+                  <small>Not long enough...that's what she said!!</small>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+        </ion-col>
+      </ion-row>
+      <ion-row class="ion-justify-content-center">
+        <ion-col size-sm="3" >
+          <ion-button 
+            type="submit"
+            color="primary"
+            (click)="onLogin()"
+            expand="block"
+            [disabled]="!f1.valid"
+          >
+            Login
+          </ion-button>
+          <ion-button 
+            type="button"
+            fill="clear" color="primary"
+            expand="block"
+            (click)="onToSignUp()"
+          >
+            Not a Member?
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
 </ion-content>
