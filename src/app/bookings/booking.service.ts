@@ -70,13 +70,28 @@ export class BookingService {
     }
 
     cancelBooking(bookingId: string) {
-        return this.bookings.pipe(
+        return this.http.delete(
+            `https://bookstuffapp.firebaseio.com/bookings/${bookingId}.json`
+        ).pipe(
+            switchMap(res => {
+                return this.bookings;
+            }),
             take(1),
-            delay(1500),
             tap(bookings => {
-                this._bookings.next(bookings.filter(b => b.id !== bookingId));
+                this._bookings.next(bookings.filter(b => b.id !== bookingId))
             })
-        );
+        )
+        
+        // =================================
+        // code for deleting booking locally
+        // =================================
+        // return this.bookings.pipe(
+        //     take(1),
+        //     delay(1500),
+        //     tap(bookings => {
+        //         this._bookings.next(bookings.filter(b => b.id !== bookingId));
+        //     })
+        // );
     }
 
     fetchBookings() {
