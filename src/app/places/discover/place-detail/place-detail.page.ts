@@ -114,8 +114,8 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
               data.firstName,
               data.lastName,
               data.guestNumber,
-              data.dateFrom,
-              data.dateTo
+              data.bookedFrom,
+              data.bookedTo
             ).subscribe(() => {
               loadingEl.dismiss();
             });

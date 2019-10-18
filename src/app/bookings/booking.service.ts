@@ -2,9 +2,21 @@ import { Injectable } from '@angular/core';
 import { Booking } from './booking.model';
 import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject } from 'rxjs';
-import { take, tap, delay, switchMap } from 'rxjs/operators';
+import { take, tap, delay, switchMap, map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
+// helper interface to define booking from DB
+interface BookingData{
+    bookedTo: string,
+    firstName: string,
+    lastName: string,
+    numOfGuests: number
+    placeId: string,
+    placeImgUrl: string,
+    placeTitle: string,
+    bookedFrom: string,
+    userId: string
+}
 @Injectable({ providedIn: 'root'})
 export class BookingService {
     private _bookings = new BehaviorSubject<Booking[]>([]);
@@ -25,8 +37,8 @@ export class BookingService {
         firstName: string,
         lastName: string,
         numOfGuests: number,
-        fromDate: Date,
-        toDate: Date
+        bookedFrom: Date,
+        bookedTo: Date
     ) {
         let generatedId: string;
         const newBooking = new Booking(
@@ -38,8 +50,8 @@ export class BookingService {
             firstName,
             lastName,
             numOfGuests,
-            fromDate,
-            toDate
+            bookedFrom,
+            bookedTo
         );
         return this.http.post<{name: string}>(
             'https://bookstuffapp.firebaseio.com/bookings.json',
@@ -63,6 +75,38 @@ export class BookingService {
             delay(1500),
             tap(bookings => {
                 this._bookings.next(bookings.filter(b => b.id !== bookingId));
+            })
+        );
+    }
+
+    fetchBookings() {
+        return this.http
+            .get<{ [key: string]: BookingData }>(
+                `https://bookstuffapp.firebaseio.com/bookings.json?OrderBy="userId"&equalto="${this.authService.userId}"`
+            ).pipe(
+                map(bookingData => {
+                    const bookings = [];
+                    for (const key in bookingData) {
+                        if (bookingData.hasOwnProperty(key)) {
+                            bookings.push(new Booking(
+                                key,
+                                bookingData[key].placeId,
+                                bookingData[key].userId,
+                                bookingData[key].placeTitle,
+                                bookingData[key].placeImgUrl,
+                                bookingData[key].firstName,
+                                bookingData[key].lastName,
+                                bookingData[key].numOfGuests,
+                                new Date(bookingData[key].bookedFrom),
+                                new Date(bookingData[key].bookedTo)
+                            )
+                        );
+                    }
+                }
+                return bookings;
+            }), tap(bookings => {
+                this._bookings.next(bookings)
+                console.log(bookings)
             })
         );
     }

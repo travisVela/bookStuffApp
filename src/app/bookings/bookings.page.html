@@ -8,22 +8,33 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid *ngIf="!loadedBookings || loadedBookings.length <= 0">
-    <ion-row class="ion-justify-content-center">
-      <ion-col size-sm="8" class="ion-text-center">
-        <h5>No bookings</h5>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  
   <ion-grid>
     <ion-row class="ion-justify-content-center">
-      <ion-col size-md="8">
+      <ion-col
+        *ngIf="isLoading" 
+        sizs-sm="8" 
+        class="ion-text-center"
+      >
+        <ion-spinner></ion-spinner>
+      </ion-col>
+      <ion-col 
+        size-sm="8"
+        class="ion-text-center"
+        *ngIf="!isLoading && (!loadedBookings || loadedBookings.length <= 0)"
+      >
+        <h5>No bookings</h5>
+      </ion-col>
+      <ion-col 
+        size-md="8"
+        *ngIf="!isLoading && loadedBookings && loadedBookings.length > 0"
+      >
         <ion-list>
           <ion-item-sliding *ngFor="let booking of loadedBookings" #slidingBooking>
             <ion-item>
               <ion-label>
-                <h5>{{ booking.placeTitle }}</h5>
-                <p>Guests: {{ booking.numOfGuests }}</p>
+                <h5>{{ booking?.placeTitle }}</h5>
+                <p>Guests: {{ booking?.numOfGuests }}</p>
               </ion-label>
             </ion-item>
             <ion-item-options>
