@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NavController, ModalController, ActionSheetController } from '@ionic/angular';
+import { NavController, ModalController, ActionSheetController, LoadingController } from '@ionic/angular';
 import { PlacesService } from '../../places.service';
 import { Place } from '../../place.model';
 import { CreateBookingComponent } from '../../../bookings/create-booking/create-booking.component';
 import { Subscription } from 'rxjs';
+import { BookingService } from '../../../bookings/booking.service';
 
 @Component({
   selector: 'app-place-detail',
@@ -21,7 +22,9 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private placesService: PlacesService,
     private modalCtrl: ModalController,
-    private actionSheetCtrl: ActionSheetController
+    private actionSheetCtrl: ActionSheetController,
+    private bookingService: BookingService,
+    private loadingCrtl: LoadingController
   ) { }
 
   ngOnInit() {
@@ -62,11 +65,11 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         ]
       }).then(actionSheetEl => {
         actionSheetEl.present();
-      })
+      });
   }
 
   openBookingModal(mode: 'select' | 'random') {
-    console.log(mode)
+    console.log(mode);
     this.modalCtrl
       .create({ component: CreateBookingComponent,
         componentProps: {
@@ -79,9 +82,26 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       .then(res => {
         console.log(res.data, res.role);
         if (res.role === 'confirm') {
-          console.log('BOOKED!!');
+          this.loadingCrtl.create({
+            message: 'booking...booking?'
+          }).then(loadingEl => {
+            loadingEl.present();
+            const data = res.data.data;
+            this.bookingService.addBooking(
+              this.place.id,
+              this.place.title,
+              this.place.imgUrl,
+              data.firstName,
+              data.lastName,
+              data.guestNumber,
+              data.dateFrom,
+              data.dateTo
+            ).subscribe(() => {
+              loadingEl.dismiss();
+            });
+          });
         }
-      })
+      });
   }
 
   ngOnDestroy() {

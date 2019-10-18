@@ -8,5 +8,23 @@
 </ion-header>
 
 <ion-content>
-  <ion-button color="primary" margin (click)="onBookPlace()">Book</ion-button>
+  <ion-grid class="ion-no-padding"> 
+    <ion-row class="ion-justify-content-center">
+      <ion-col size-sm="8" class="ion-no-padding"> 
+        <ion-img [src]="place.imgUrl">
+      
+        </ion-img>
+      </ion-col>
+    </ion-row>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size-sm="8" class="ion-text-center"> 
+        <p>{{ place.description }}</p>
+      </ion-col>
+    </ion-row>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size-sm="8" class="ion-text-center">
+        <ion-button color="primary" margin (click)="onBookPlace()">Book</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
