@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 })
 export class OffersPage implements OnInit, OnDestroy {
   offers: Place[];
+  isLoading = false;
   placesSubscription: Subscription;
 
   constructor(
@@ -23,6 +24,13 @@ export class OffersPage implements OnInit, OnDestroy {
    this.placesSubscription = this.placesService.places.subscribe(places => {
      this.offers = places;
    });
+  }
+
+  ionViewWillEnter() {
+    this.isLoading = true;
+    this.placesService.fetchPlaces().subscribe(() => {
+      this.isLoading = false;
+    });
   }
 
   onEdit(offerId: string, slidingItem: IonItemSliding) {
