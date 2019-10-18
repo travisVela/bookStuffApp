@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { take, map, tap, delay, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
@@ -51,8 +51,6 @@ interface PlaceData {
   providedIn: 'root'
 })
 export class PlacesService {
-
-
   private _places =new BehaviorSubject<Place[]>([]);
 
   get places() {
@@ -91,10 +89,30 @@ export class PlacesService {
   }
 
   getPlace(id: string) {
-    return this.places.pipe(take(1), map(places => {
-      return {...places.find(p => p.id === id)};
+    return this.http.get<Place>(
+      `https://bookstuffapp.firebaseio.com/places/${id}.json`
+      )
+      .pipe(
+        map(place => {
+          return new Place(
+            id,
+            place.title,
+            place.description,
+            place.imgUrl,
+            place.price,
+            new Date(place.availableFrom),
+            new Date(place.availableTo),
+            place.userId
+          );
+        })
+      )
 
-    }))
+    // ===========================================
+    // this was used to get a single place locally
+    // ===========================================
+    // return this.places.pipe(take(1), map(places => {
+    //   return {...places.find(p => p.id === id)};
+    // }))
   }
 
   addPlace(
@@ -149,6 +167,16 @@ export class PlacesService {
     return this.places.pipe(
       take(1),
       switchMap(places => {
+        if (!places || places.length <= 0) {
+          this.fetchPlaces();
+        } else {
+          return of(places);
+        }
+        
+        }), tap(() => {
+          this._places.next(updatedPlaces)
+      }),
+        switchMap(places => {
         const updatedPlaceIndex = places.findIndex(place => place.id === placeId);
         const updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex]
@@ -165,9 +193,8 @@ export class PlacesService {
           return this.http.put(`https://bookstuffapp.firebaseio.com/places/${placeId}.json`, 
             { ...updatedPlaces[updatedPlaceIndex], id: null }
           );
-        }), tap(() => {
-          this._places.next(updatedPlaces)
-      }))
+        })
+      )
     }
 
 }
