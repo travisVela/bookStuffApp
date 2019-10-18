@@ -145,10 +145,10 @@ export class PlacesService {
     title: string,
     description: string
   ) {
+    let updatedPlaces = [];
     return this.places.pipe(
       take(1),
-      delay(1500),
-      tap(places => {
+      switchMap(places => {
         const updatedPlaceIndex = places.findIndex(place => place.id === placeId);
         const updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex]
@@ -162,9 +162,12 @@ export class PlacesService {
           oldPlace.availableTo,
           oldPlace.userId
         );
-        this._places.next(updatedPlaces)
-      })
-    )
-  }
+          return this.http.put(`https://bookstuffapp.firebaseio.com/places/${placeId}.json`, 
+            { ...updatedPlaces[updatedPlaceIndex], id: null }
+          );
+        }), tap(() => {
+          this._places.next(updatedPlaces)
+      }))
+    }
 
 }
