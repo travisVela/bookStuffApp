@@ -17,6 +17,6 @@ export class LocationPickerComponent implements OnInit {
     this.modalCtrl.create({component: MapModalComponent})
     .then(modalEl => {
       modalEl.present();
-    })
+    });
   }
 }
