@@ -7,6 +7,7 @@ import { CreateBookingComponent } from '../../../bookings/create-booking/create-
 import { Subscription } from 'rxjs';
 import { BookingService } from '../../../bookings/booking.service';
 import { AuthService } from '../../../auth/auth.service';
+import { MapModalComponent } from '../../../shared/map-modal/map-modal.component';
 
 @Component({
   selector: 'app-place-detail',
@@ -42,7 +43,6 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         .subscribe(place => {
           this.place = place;
           this.isBookable = place.userId !== this.authService.userId;
-          console.log(this.place)
       }, error => {
         this.alertCtrl.create({
           header: 'oops!!',
@@ -87,6 +87,17 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       }).then(actionSheetEl => {
         actionSheetEl.present();
       });
+  }
+
+  onShowMap() {
+    this.modalCtrl.create({ component: MapModalComponent, componentProps: {
+      center: { lat: this.place.location.lat, lng: this.place.location.lng },
+      selectable: false,
+      closeButtonText: 'Close',
+      title: this.place.location.address
+    } }).then(modalEl => {
+      modalEl.present();
+    }) 
   }
 
   openBookingModal(mode: 'select' | 'random') {
