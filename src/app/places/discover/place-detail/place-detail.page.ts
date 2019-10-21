@@ -42,6 +42,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         .subscribe(place => {
           this.place = place;
           this.isBookable = place.userId !== this.authService.userId;
+          console.log(this.place)
       }, error => {
         this.alertCtrl.create({
           header: 'oops!!',
