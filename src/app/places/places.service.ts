@@ -4,6 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { take, map, tap, delay, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { PlaceLocation } from './loaction.model';
 
 // ==================
 // places dummy data
@@ -46,6 +47,7 @@ interface PlaceData {
   price: number;
   title: string;
   userId: string;
+  location: PlaceLocation
 }
 @Injectable({
   providedIn: 'root'
@@ -76,7 +78,8 @@ export class PlacesService {
                 res[key].price,
                 new Date(res[key].availableFrom),
                 new Date(res[key].availableTo),
-                res[key].userId
+                res[key].userId,
+                res[key].location
             ))
           }
         }
@@ -102,7 +105,8 @@ export class PlacesService {
             place.price,
             new Date(place.availableFrom),
             new Date(place.availableTo),
-            place.userId
+            place.userId,
+            place.location
           );
         })
       )
@@ -120,7 +124,8 @@ export class PlacesService {
     description: string,
     price: number,
     availableFrom: Date,
-    availableTo: Date
+    availableTo: Date,
+    location: PlaceLocation
   ) {
     let generatedId: string;
     const newPlace = new Place(
@@ -131,7 +136,8 @@ export class PlacesService {
       price,
       availableFrom,
       availableTo,
-      this.authService.userId
+      this.authService.userId,
+      location
     );
     return this.http
       .post<{name: string}>('https://bookstuffapp.firebaseio.com/places.json', {
@@ -188,7 +194,8 @@ export class PlacesService {
           oldPlace.price,
           oldPlace.availableFrom,
           oldPlace.availableTo,
-          oldPlace.userId
+          oldPlace.userId,
+          oldPlace.location
         );
           return this.http.put(`https://bookstuffapp.firebaseio.com/places/${placeId}.json`, 
             { ...updatedPlaces[updatedPlaceIndex], id: null }
