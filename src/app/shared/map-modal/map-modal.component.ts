@@ -9,7 +9,7 @@ import { googleMapsToken } from '../../../../src/keys';
 })
 export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('map', {static: false}) mapElementRef: ElementRef; 
-  @Input() center = { lat: -34.397, lng: 150.644 }
+  @Input() center = { lat: 29.4241, lng: -98.4936 }
   @Input() selectable = true;
   @Input() closeButtonText  = 'Cancel';
   @Input() title = 'Pick Location';
