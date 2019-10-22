@@ -5,12 +5,28 @@ import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { PlacesPageModule } from '../../places.module';
 import { PlaceLocation } from '../../loaction.model';
+import { switchMap } from 'rxjs/operators';
 
 // method to turn the base64 string into a blob/file
+// function dataURItoBlob(dataURI, contentType) {
+//   contentType = contentType || '';
+//   var arr = dataURI.split(','), mime = arr[0].match(/:(.*?);/)[1];
+//   return new Blob([atob(arr[1])], {type:mime});
+// }
+
 function dataURItoBlob(dataURI, contentType) {
   contentType = contentType || '';
-  var arr = dataURI.split(','), mime = arr[0].match(/:(.*?);/)[1];
-  return new Blob([atob(arr[1])], {type:mime});
+  var byteString = atob(dataURI.split(',')[1]);
+  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+  var ab = new ArrayBuffer(byteString.length);
+  var ia = new Uint8Array(ab);
+  for (var i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+  }
+
+  var blob = new Blob([ab], {type: mimeString});
+  return blob;
+
 }
 
 
@@ -110,18 +126,23 @@ export class NewOfferPage implements OnInit {
       message: 'Loading place...'
     }).then(loadingEl => {
       loadingEl.present();
-      this.placesService.addPlace(
-        this.form.value.title,
-        this.form.value.description,
-        +this.form.value.price,
-        new Date(this.form.value.dateFrom),
-        new Date(this.form.value.dateTo),
-        this.form.value.location
-      ).subscribe(() => {
-        loadingEl.dismiss()
-        this.form.reset();
-        this.router.navigate(['/places/tabs/offers']);
-      })
+      this.placesService.uploadImage(this.form.get('image').value)
+        .pipe(switchMap(uploadRes => {
+          return this.placesService.addPlace(
+            this.form.value.title,
+            this.form.value.description,
+            +this.form.value.price,
+            new Date(this.form.value.dateFrom),
+            new Date(this.form.value.dateTo),
+            this.form.value.location,
+            uploadRes.imageUrl
+          );
+        }))
+        .subscribe(() => {
+          loadingEl.dismiss()
+          this.form.reset();
+          this.router.navigate(['/places/tabs/offers']);
+        })
     });
   }
 

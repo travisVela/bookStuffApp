@@ -119,20 +119,30 @@ export class PlacesService {
     // }))
   }
 
+  uploadImage(image: File) {
+    const uploadData = new FormData;
+    uploadData.append('image ', image);
+    return this.http.post<{ imageUrl: string, imagePath: string }>(
+      'https://us-central1-bookstuffapp.cloudfunctions.net/storeImage',
+      uploadData
+    )
+  }
+
   addPlace(
     title: string,
     description: string,
     price: number,
     availableFrom: Date,
     availableTo: Date,
-    location: PlaceLocation
+    location: PlaceLocation,
+    imageUrl: string
   ) {
     let generatedId: string;
     const newPlace = new Place(
       (Math.random() * 20).toString(),
       title,
       description,
-      'https://static01.nyt.com/images/2019/07/07/nyregion/07mansiom3/33dc1994a1974a618a74e2fba45ab10c-jumbo.jpg?quality=90&auto=webp',
+      imageUrl,
       price,
       availableFrom,
       availableTo,
