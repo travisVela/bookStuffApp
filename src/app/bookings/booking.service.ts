@@ -41,22 +41,28 @@ export class BookingService {
         bookedTo: Date
     ) {
         let generatedId: string;
-        const newBooking = new Booking(
-            Math.random().toString(),
-            placeId,
-            this.authService.userId,
-            placeTitle,
-            placeImgUrl,
-            firstName,
-            lastName,
-            numOfGuests,
-            bookedFrom,
-            bookedTo
-        );
-        return this.http.post<{name: string}>(
-            'https://bookstuffapp.firebaseio.com/bookings.json',
-            {...newBooking, id: null}
-        ).pipe(
+        let newBooking: Booking;
+        return this.authService.userId.pipe(take(1), switchMap(userId => {
+            if (!userId) {
+                throw new Error('No User id found');
+            }
+            newBooking = new Booking(
+                Math.random().toString(),
+                placeId,
+                userId,
+                placeTitle,
+                placeImgUrl,
+                firstName,
+                lastName,
+                numOfGuests,
+                bookedFrom,
+                bookedTo
+            );
+            return this.http.post<{name: string}>(
+                'https://bookstuffapp.firebaseio.com/bookings.json',
+                {...newBooking, id: null}
+            );
+        }),
             switchMap(res => {
                 generatedId = res.name;
                 return this.bookings;

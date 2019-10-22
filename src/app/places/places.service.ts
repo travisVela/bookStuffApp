@@ -138,23 +138,30 @@ export class PlacesService {
     imageUrl: string
   ) {
     let generatedId: string;
-    const newPlace = new Place(
-      (Math.random() * 20).toString(),
-      title,
-      description,
-      imageUrl,
-      price,
-      availableFrom,
-      availableTo,
-      this.authService.userId,
-      location
-    );
-    return this.http
-      .post<{name: string}>('https://bookstuffapp.firebaseio.com/places.json', {
-        ...newPlace,
-        id: null
-      })
-      .pipe(
+    let newPlace: Place;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+      if (!userId) {
+        throw new Error('No user id found!')
+      }
+      newPlace = new Place(
+        (Math.random() * 20).toString(),
+        title,
+        description,
+        imageUrl,
+        price,
+        availableFrom,
+        availableTo,
+        userId,
+        location
+      );
+      return this.http
+        .post<{name: string}>('https://bookstuffapp.firebaseio.com/places.json', {
+          ...newPlace,
+          id: null
+        })
+      }),
         switchMap(res => {
           generatedId = res.name;
           return this.places;

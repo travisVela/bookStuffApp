@@ -8,6 +8,8 @@ import { Subscription } from 'rxjs';
 import { BookingService } from '../../../bookings/booking.service';
 import { AuthService } from '../../../auth/auth.service';
 import { MapModalComponent } from '../../../shared/map-modal/map-modal.component';
+import { TouchSequence } from 'selenium-webdriver';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-place-detail',
@@ -38,11 +40,17 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('places/tabs/discover');
         return;
       }
-      this.placeSubscription = this.placesService
-        .getPlace(paramMap.get('placeId'))
-        .subscribe(place => {
+      let fetchedUserId: string;
+      this.authService.userId.pipe(switchMap(userId => {
+        if (!userId) {
+          throw new Error('Found no user id!');
+        }
+        fetchedUserId = userId;
+        return this.placesService
+        .getPlace(paramMap.get('placeId'));
+      })).subscribe(place => {
           this.place = place;
-          this.isBookable = place.userId !== this.authService.userId;
+          this.isBookable = place.userId !== fetchedUserId;
       }, error => {
         this.alertCtrl.create({
           header: 'oops!!',
