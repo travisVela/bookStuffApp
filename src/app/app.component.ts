@@ -4,7 +4,7 @@ import { Platform, MenuController } from '@ionic/angular';
 import { AuthService } from './auth/auth.service';
 import { Router } from '@angular/router';
 
-import { Capacitor, Plugins } from '@capacitor/core';
+import { Plugins, Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-root',

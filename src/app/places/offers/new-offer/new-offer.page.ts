@@ -50,7 +50,10 @@ export class NewOfferPage implements OnInit {
   }
 
   onLocationPicked(location: PlaceLocation) {
-    this.form.patchValue({location: location})
+    this.form.patchValue({ location: location });
+  }
+
+  onImagePicked(imageData: string) {
   }
 
   onCreateOffer() {
