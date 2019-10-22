@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firebaseToken } from '../../../src/keys';
+import { EmailValidator } from '@angular/forms';
+import { ɵangular_packages_platform_browser_platform_browser_d } from '@angular/platform-browser';
 
 
 // interface for auth response data for better automcompletion
-interface AuthResponseData {
+export interface AuthResponseData {
   kind: string,
   idToken: string,
   email: string,
@@ -20,7 +22,7 @@ interface AuthResponseData {
 export class AuthService {
   private _userIsAuthenticated = false;
   private _userId = null;
-  token = firebaseToken;
+  firebaseToken = firebaseToken;
 
   get userIsAuthenticated() {
     return this._userIsAuthenticated;
@@ -34,12 +36,15 @@ export class AuthService {
 
   signUp(email: string, password: string) {
     return this.http.post<AuthResponseData>(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.token}`, 
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.firebaseToken}`, 
       { email: email, password: password, returnSecureToken: true })
   }
   
-  login() {
-    this._userIsAuthenticated = true;
+  login(email: string, password: string) {
+    return this.http.post<AuthResponseData>(`
+      https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.firebaseToken}`,
+      { email: email, password: password, returnSecureToken: true }
+    )
   }
 
   logout() {
