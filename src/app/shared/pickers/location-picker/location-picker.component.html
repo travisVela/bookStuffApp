@@ -4,7 +4,7 @@
     role="button"
     class="locationImage"
     [src]="selectedLocationImage"
-    *ngIf="selectedLocationImage && !isLoading"
+    *ngIf="selectedLocationImage && !isLoading && showPreview"
     (click)= "onPickLocation()"
   ></ion-img>
   <ion-button 

@@ -1,6 +1,6 @@
 {
-  "appId": "io.ionic.starter",
-  "appName": "bookingStuffApp",
+  "appId": "com.bnbb8.capapp",
+  "appName": "BnBB8",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www"

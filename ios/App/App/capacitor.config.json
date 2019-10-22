@@ -1,7 +1,0 @@
-{
-  "appId": "io.ionic.starter",
-  "appName": "bookingStuffApp",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "www"
-}
