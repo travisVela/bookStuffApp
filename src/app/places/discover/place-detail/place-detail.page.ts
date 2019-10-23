@@ -109,7 +109,6 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
   }
 
   openBookingModal(mode: 'select' | 'random') {
-    console.log(mode);
     this.modalCtrl
       .create({ component: CreateBookingComponent,
         componentProps: {
@@ -120,8 +119,8 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         return modalEl.onDidDismiss();
       })
       .then(res => {
-        console.log(res.data, res.role);
         if (res.role === 'confirm') {
+          console.log(res.data, res.role);
           this.loadingCrtl.create({
             message: 'booking...booking?'
           }).then(loadingEl => {
