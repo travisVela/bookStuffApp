@@ -1,4 +1,4 @@
-import { Injectable, LOCALE_ID } from '@angular/core';
+import { Injectable, LOCALE_ID, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firebaseToken } from '../../../src/keys';
 import { EmailValidator } from '@angular/forms';
@@ -23,8 +23,10 @@ export interface AuthResponseData {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   private _user = new BehaviorSubject<User>(null);
+  private activeLogoutTimer: any;
+
   firebaseToken = firebaseToken;
   
 
@@ -77,6 +79,7 @@ export class AuthService {
       tap(user => {
         if (user) {
           this._user.next(user);
+          this.autoLogout(user.tokenDuration)
         }
       }),
       map(user => {
@@ -102,19 +105,39 @@ export class AuthService {
     .pipe(tap(this.setUserData.bind(this)));
   }
 
+  private autoLogout(duration: number) {
+    if (this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
+    this.activeLogoutTimer = setTimeout(() => {
+      this.logout()
+    }, duration)
+  }
+
   logout() {
+    if (this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
     this._user.next(null);
+    Plugins.Storage.remove({key: 'authData'});
+  }
+
+  ngOnDestroy() {
+    if (this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
   }
 
   private setUserData(userData: AuthResponseData) {
     const expirationTime = new Date(new Date().getTime() + (+userData.expiresIn * 1000));
-      this._user.next(new User(
-        userData.localId,
-        userData.email,
-        userData.idToken,
-        expirationTime
-      )
+    const user = new User(
+      userData.localId,
+      userData.email,
+      userData.idToken,
+      expirationTime
     );
+      this._user.next(user);
+      this.autoLogout(user.tokenDuration)
       this.storeAuthData(
         userData.localId,
         userData.idToken,
