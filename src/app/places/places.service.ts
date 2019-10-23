@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, pipe } from 'rxjs';
 import { take, map, tap, delay, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { PlaceLocation } from './loaction.model';
@@ -64,8 +64,14 @@ export class PlacesService {
   ) { }
 
   fetchPlaces() {
-    return this.http.get<{ [key: string]: PlaceData }>('https://bookstuffapp.firebaseio.com/places.json')
-      .pipe(map(res => {
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.get<{ [key: string]: PlaceData }>(
+          `https://bookstuffapp.firebaseio.com/places.json?auth=${token}`
+        );
+      }),
+      map(res => {
         const places = [];
         for (const key in res) {
           if (res.hasOwnProperty(key)) {
@@ -92,10 +98,13 @@ export class PlacesService {
   }
 
   getPlace(id: string) {
-    return this.http.get<Place>(
-      `https://bookstuffapp.firebaseio.com/places/${id}.json`
-      )
-      .pipe(
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.get<Place>(
+          `https://bookstuffapp.firebaseio.com/places/${id}.json?auth=${token}`
+          )
+      }),
         map(place => {
           return new Place(
             id,
@@ -122,9 +131,13 @@ export class PlacesService {
   uploadImage(image: File) {
     const uploadData = new FormData;
     uploadData.append('image ', image);
-    return this.http.post<{ imageUrl: string, imagePath: string }>(
-      'https://us-central1-bookstuffapp.cloudfunctions.net/storeImage',
-      uploadData
+    return this.authService.token.pipe(
+      switchMap(token => {
+        return this.http.post<{ imageUrl: string, imagePath: string }>(
+          'https://us-central1-bookstuffapp.cloudfunctions.net/storeImage',
+          uploadData, { headers: { Authorization: 'Bearer ' + token } }
+        )
+      })
     )
   }
 
@@ -138,11 +151,17 @@ export class PlacesService {
     imageUrl: string
   ) {
     let generatedId: string;
+    let fetchedUserId: string;
     let newPlace: Place;
     return this.authService.userId.pipe(
       take(1),
       switchMap(userId => {
-      if (!userId) {
+        fetchedUserId = userId;
+        return this.authService.token
+      }),
+      take(1),
+      switchMap(token => {
+      if (!fetchedUserId) {
         throw new Error('No user id found!')
       }
       newPlace = new Place(
@@ -153,14 +172,15 @@ export class PlacesService {
         price,
         availableFrom,
         availableTo,
-        userId,
+        fetchedUserId,
         location
       );
       return this.http
-        .post<{name: string}>('https://bookstuffapp.firebaseio.com/places.json', {
-          ...newPlace,
-          id: null
-        })
+        .post<{name: string}>(
+          `https://bookstuffapp.firebaseio.com/places.json?auth=${token}`, {
+            ...newPlace,
+            id: null
+          })
       }),
         switchMap(res => {
           generatedId = res.name;
@@ -187,7 +207,13 @@ export class PlacesService {
     description: string
   ) {
     let updatedPlaces = [];
-    return this.places.pipe(
+    let fetchedToken: string;
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        fetchedToken = token;
+        return this.places
+      }),
       take(1),
       switchMap(places => {
         if (!places || places.length <= 0) {
@@ -195,9 +221,6 @@ export class PlacesService {
         } else {
           return of(places);
         }
-        
-        }), tap(() => {
-          this._places.next(updatedPlaces)
       }),
         switchMap(places => {
         const updatedPlaceIndex = places.findIndex(place => place.id === placeId);
@@ -214,11 +237,13 @@ export class PlacesService {
           oldPlace.userId,
           oldPlace.location
         );
-          return this.http.put(`https://bookstuffapp.firebaseio.com/places/${placeId}.json`, 
+          return this.http.put(`https://bookstuffapp.firebaseio.com/places/${placeId}.json?auth=${fetchedToken}`, 
             { ...updatedPlaces[updatedPlaceIndex], id: null }
           );
+        }),
+        tap(() => {
+        this._places.next(updatedPlaces)
         })
-      )
+      );
     }
-
 }

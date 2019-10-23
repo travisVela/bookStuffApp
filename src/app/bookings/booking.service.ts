@@ -4,6 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject } from 'rxjs';
 import { take, tap, delay, switchMap, map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { stringify } from '@angular/compiler/src/util';
 
 // helper interface to define booking from DB
 interface BookingData{
@@ -41,28 +42,37 @@ export class BookingService {
         bookedTo: Date
     ) {
         let generatedId: string;
+        let fetchedUserId: string;
         let newBooking: Booking;
-        return this.authService.userId.pipe(take(1), switchMap(userId => {
-            if (!userId) {
-                throw new Error('No User id found');
-            }
-            newBooking = new Booking(
-                Math.random().toString(),
-                placeId,
-                userId,
-                placeTitle,
-                placeImgUrl,
-                firstName,
-                lastName,
-                numOfGuests,
-                bookedFrom,
-                bookedTo
-            );
-            return this.http.post<{name: string}>(
-                'https://bookstuffapp.firebaseio.com/bookings.json',
-                {...newBooking, id: null}
-            );
-        }),
+        return this.authService.userId.pipe(
+            take(1), 
+            switchMap(userId => {
+                if (!userId) {
+                    throw new Error('No User id found');
+                }
+                fetchedUserId = userId;
+                return this.authService.token;
+            }),
+            take(1),
+            switchMap(token => {
+
+                newBooking = new Booking(
+                    Math.random().toString(),
+                    placeId,
+                    fetchedUserId,
+                    placeTitle,
+                    placeImgUrl,
+                    firstName,
+                    lastName,
+                    numOfGuests,
+                    bookedFrom,
+                    bookedTo
+                );
+                return this.http.post<{name: string}>(
+                    `https://bookstuffapp.firebaseio.com/bookings.json?auth=${token}`,
+                    {...newBooking, id: null}
+                );
+            }),
             switchMap(res => {
                 generatedId = res.name;
                 return this.bookings;
@@ -76,10 +86,14 @@ export class BookingService {
     }
 
     cancelBooking(bookingId: string) {
-        return this.http.delete(
-            `https://bookstuffapp.firebaseio.com/bookings/${bookingId}.json`
-        ).pipe(
-            switchMap(res => {
+        return this.authService.token.pipe(
+            take(1),
+            switchMap(token => {
+                return this.http.delete(
+                    `https://bookstuffapp.firebaseio.com/bookings/${bookingId}.json?auth=${token}`
+                )
+            }),
+            switchMap(() => {
                 return this.bookings;
             }),
             take(1),
@@ -101,38 +115,47 @@ export class BookingService {
     }
 
     fetchBookings() {
-        return this.authService.userId.pipe(take(1), switchMap(userId => {
-            if (!userId) {
-                throw new Error('User not found!')
-            }
-            return this.http
-            .get<{ [key: string]: BookingData }>(
-                `https://bookstuffapp.firebaseio.com/bookings.json?OrderBy="userId"&equalto="${userId}"`
-            )
-        }), map(bookingData => {
-                const bookings = [];
-                for (const key in bookingData) {
-                    if (bookingData.hasOwnProperty(key)) {
-                        bookings.push(new Booking(
-                            key,
-                            bookingData[key].placeId,
-                            bookingData[key].userId,
-                            bookingData[key].placeTitle,
-                            bookingData[key].placeImgUrl,
-                            bookingData[key].firstName,
-                            bookingData[key].lastName,
-                            bookingData[key].numOfGuests,
-                            new Date(bookingData[key].bookedFrom),
-                            new Date(bookingData[key].bookedTo)
-                        )
-                    );
+        let fetchedUserId: string;
+        return this.authService.userId.pipe(
+            take(1), 
+            switchMap(userId => {
+                if (!userId) {
+                    throw new Error('User not found!')
                 }
-            }
-                return bookings;
-            }), tap(bookings => {
-                this._bookings.next(bookings)
-                console.log(bookings)
-            })
-        );
-    }
+                fetchedUserId = userId;
+                return this.authService.token;  
+            }), 
+            take(1),
+            switchMap(token => {
+                return this.http
+                .get<{ [key: string]: BookingData }>(
+                    `https://bookstuffapp.firebaseio.com/bookings.json?OrderBy="userId"&equalto="${fetchedUserId}"&auth=${token}`
+                )
+            }),
+            map(bookingData => {
+                    const bookings = [];
+                    for (const key in bookingData) {
+                        if (bookingData.hasOwnProperty(key)) {
+                            bookings.push(new Booking(
+                                key,
+                                bookingData[key].placeId,
+                                bookingData[key].userId,
+                                bookingData[key].placeTitle,
+                                bookingData[key].placeImgUrl,
+                                bookingData[key].firstName,
+                                bookingData[key].lastName,
+                                bookingData[key].numOfGuests,
+                                new Date(bookingData[key].bookedFrom),
+                                new Date(bookingData[key].bookedTo)
+                            )
+                        );
+                    }
+                }
+                    return bookings;
+                }), tap(bookings => {
+                    this._bookings.next(bookings)
+                    console.log(bookings)
+                })
+            );
+        }
 }
