@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">bookingStuffApp</string>
-    <string name="title_activity_main">bookingStuffApp</string>
-    <string name="package_name">io.ionic.starter</string>
-    <string name="fileprovider_authority">io.ionic.starter.fileprovider</string>
-    <string name="custom_url_scheme">io.ionic.starter</string>
+    <string name="app_name">BnBB8</string>
+    <string name="title_activity_main">BnBB8</string>
+    <string name="package_name">com.bookstuffapp.bnbb8</string>
+    <string name="fileprovider_authority">com.bookstuffapp.bnbb8</string>
+    <string name="custom_url_scheme">com.bookstuffapp.bnbb8</string>
 </resources>
