@@ -135,6 +135,6 @@ export class AuthService {
       tokenExpirtionDate: tokenExpirtionDate,
       email: email
     })
-    Plugins.Storage.set({key: 'authData', value: })
+    Plugins.Storage.set({key: 'authData', value: data})
   }
 }
